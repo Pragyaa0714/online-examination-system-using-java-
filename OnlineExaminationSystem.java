@@ -10,6 +10,8 @@ public class OnlineExaminationSystem extends JFrame {
     String currentPassword = "1234";
 
     boolean examRunning = false;
+    boolean examSubmitted = false;
+    boolean resultCardAdded = false;
 
     // ================= QUESTIONS =================
 
@@ -409,9 +411,8 @@ public class OnlineExaminationSystem extends JFrame {
                 userAnswers[i] = -1;
             }
 
-            timeRemaining =
-                    totalExamTime;
-
+            examSubmitted = false;
+            timeRemaining = totalExamTime;
             examRunning = true;
 
             loadQuestion();
@@ -724,7 +725,7 @@ public class OnlineExaminationSystem extends JFrame {
 
     private void startTimer() {
 
-        if (timer != null) {
+        if (timer != null && timer.isRunning()) {
             timer.stop();
         }
 
@@ -732,13 +733,22 @@ public class OnlineExaminationSystem extends JFrame {
                 1000,
                 e -> {
 
-                    timeRemaining--;
+                    if (timeRemaining <= 0) {
+                        if (timer != null) {
+                            timer.stop();
+                        }
+                        submitExam();
+                        return;
+                    }
 
+                    timeRemaining--;
                     updateTimerDisplay();
 
                     if (timeRemaining <= 0) {
 
-                        timer.stop();
+                        if (timer != null) {
+                            timer.stop();
+                        }
 
                         examRunning = false;
 
@@ -784,9 +794,14 @@ public class OnlineExaminationSystem extends JFrame {
 
     private void submitExam() {
 
+        if (examSubmitted) {
+            return;
+        }
+
+        examSubmitted = true;
         saveAnswer();
 
-        if (timer != null) {
+        if (timer != null && timer.isRunning()) {
             timer.stop();
         }
 
@@ -805,9 +820,8 @@ public class OnlineExaminationSystem extends JFrame {
             }
         }
 
-        int timeTaken =
-                totalExamTime
-                        - timeRemaining;
+        int safeRemaining = Math.max(0, timeRemaining);
+        int timeTaken = totalExamTime - safeRemaining;
 
         showResult(
                 score,
@@ -1015,6 +1029,7 @@ public class OnlineExaminationSystem extends JFrame {
             }
 
             examRunning = false;
+            examSubmitted = false;
 
             currentQuestion = 0;
 
@@ -1025,8 +1040,7 @@ public class OnlineExaminationSystem extends JFrame {
                 userAnswers[i] = -1;
             }
 
-            timeRemaining =
-                    totalExamTime;
+            timeRemaining = totalExamTime;
 
             cardLayout.show(
                     mainPanel,
@@ -1034,10 +1048,13 @@ public class OnlineExaminationSystem extends JFrame {
             );
         });
 
-        mainPanel.add(
-                resultPanel,
-                "RESULT"
-        );
+        if (!resultCardAdded) {
+            mainPanel.add(
+                    resultPanel,
+                    "RESULT"
+            );
+            resultCardAdded = true;
+        }
 
         cardLayout.show(
                 mainPanel,
