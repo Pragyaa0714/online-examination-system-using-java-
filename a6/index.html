@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <title>Input / Output Unit</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101827;
+      --panel: #172235;
+      --panel-light: #1d2b40;
+      --line: rgba(182, 199, 224, .12);
+      --text: #f1f5fb;
+      --muted: #9aa9bd;
+      --mint: #79e2c1;
+      --blue: #7ca8ff;
+      --amber: #ffc777;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(61, 100, 153, .2), transparent 36rem),
+        radial-gradient(ellipse at 100% 65%, rgba(61, 142, 126, .1), transparent 32rem),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+    header {
+      min-height: 86px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(121, 226, 193, .28);
+      border-radius: 13px;
+      color: var(--mint);
+      background: rgba(121, 226, 193, .08);
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .brand-name { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: .01em; }
+    .brand-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #bfccdc;
+      background: rgba(255, 255, 255, .025);
+      font-size: 12px;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 12px rgba(121, 226, 193, .75); }
+
+    main { padding: 56px 0 44px; }
+    .intro { position: relative; max-width: 760px; margin-bottom: 28px; }
+    .eyebrow { margin: 0 0 12px; color: var(--mint); font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(38px, 5vw, 54px); line-height: 1.08; letter-spacing: -.05em; }
+    h1 span { color: var(--mint); }
+    .intro-copy { max-width: 560px; margin: 15px 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr 34px 1fr 34px 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 22px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .025);
+    }
+    .flow-step { display: flex; min-width: 0; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 9px; background: rgba(255, 255, 255, .025); }
+    .flow-number { color: #78879b; font-family: "SFMono-Regular", Consolas, monospace; font-size: 10px; }
+    .flow-step strong { display: block; color: #e3ebf5; font-size: 11px; letter-spacing: .07em; }
+    .flow-step small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .flow-step:first-child .flow-number { color: var(--mint); }
+    .flow-step:last-child .flow-number { color: var(--blue); }
+    .flow-arrow { color: #63738a; font-size: 15px; text-align: center; }
+
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: 20px; align-items: stretch; }
+    .card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(29, 43, 64, .97), rgba(22, 33, 50, .97));
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .16);
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .card:hover { border-color: rgba(182, 199, 224, .2); box-shadow: 0 22px 55px rgba(0, 0, 0, .22); transform: translateY(-2px); }
+    .card-heading { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--line); }
+    .card-heading h2 { margin: 0; font-size: 14px; font-weight: 700; }
+    .tiny-label { color: var(--muted); font-size: 11px; letter-spacing: .04em; }
+
+    .register { padding: 24px 24px 22px; }
+    .register-label { color: var(--muted); font-size: 12px; }
+    .register-value {
+      display: flex;
+      min-height: 112px;
+      align-items: center;
+      margin-top: 13px;
+      padding: 19px 22px;
+      border: 1px solid rgba(121, 226, 193, .24);
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 92% 50%, rgba(121, 226, 193, .12), transparent 8rem),
+        linear-gradient(110deg, rgba(121, 226, 193, .075), rgba(121, 226, 193, .015));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .025);
+    }
+    .value { overflow: hidden; color: var(--mint); font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: clamp(34px, 5vw, 52px); font-weight: 700; letter-spacing: -.055em; text-overflow: ellipsis; }
+    .register-help { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+
+    .input-area { margin-top: 25px; }
+    label { display: block; margin-bottom: 9px; color: #dce5f1; font-size: 12px; font-weight: 650; }
+    .input-row { display: flex; gap: 10px; }
+    .input-row .button-in { flex: 0 0 auto; white-space: nowrap; }
+    input {
+      width: 100%;
+      min-width: 0;
+      height: 48px;
+      padding: 0 14px;
+      border: 1px solid rgba(182, 199, 224, .18);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: rgba(8, 15, 26, .38);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input::placeholder { color: #718098; }
+    input:focus { border-color: rgba(121, 226, 193, .65); box-shadow: 0 0 0 3px rgba(121, 226, 193, .1); }
+    .button {
+      display: inline-flex;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 17px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 750;
+      transition: transform .15s, filter .15s, background .15s;
+    }
+    .button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .button:active { transform: translateY(0); }
+    .button:focus-visible { outline: 3px solid rgba(124, 168, 255, .55); outline-offset: 2px; }
+    .button-in { color: #11251f; background: var(--mint); }
+    .button-out { color: #e6efff; border-color: rgba(124, 168, 255, .25); background: rgba(124, 168, 255, .12); }
+    .button-reset { min-height: 36px; padding: 0 12px; color: #c5d0de; border-color: var(--line); background: rgba(255, 255, 255, .025); font-size: 11px; }
+    .actions { display: flex; gap: 10px; margin-top: 13px; }
+    .message { min-height: 18px; margin: 10px 0 0; color: var(--amber); font-size: 12px; }
+
+    .instructions { padding: 7px 21px 18px; }
+    .instruction {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 13px;
+      padding: 16px 2px;
+      border-bottom: 1px solid var(--line);
+    }
+    .instruction:last-child { border-bottom: 0; }
+    .opcode {
+      display: grid;
+      width: 43px;
+      height: 38px;
+      place-items: center;
+      border-radius: 9px;
+      color: var(--blue);
+      background: rgba(124, 168, 255, .11);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .opcode.in { color: var(--mint); background: rgba(121, 226, 193, .1); }
+    .instruction h3 { margin: 1px 0 5px; font-size: 13px; }
+    .instruction p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+
+    .log-card { margin-top: 20px; }
+    .log-list { max-height: 230px; overflow: auto; padding: 6px 22px 14px; }
+    .log-entry { display: grid; grid-template-columns: 54px 62px 1fr; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); color: #c8d3e1; font-size: 12px; }
+    .log-entry:last-child { border-bottom: 0; }
+    .log-time { color: #8392a7; font-family: "SFMono-Regular", Consolas, monospace; font-size: 11px; white-space: nowrap; }
+    .log-code { width: fit-content; padding: 4px 7px; border-radius: 6px; color: var(--mint); background: rgba(121, 226, 193, .09); font-family: "SFMono-Regular", Consolas, monospace; font-size: 10px; font-weight: 800; }
+    .log-code.out { color: var(--blue); background: rgba(124, 168, 255, .1); }
+    .empty-log { padding: 17px 0; color: var(--muted); font-size: 12px; }
+    footer { padding: 22px 0 32px; border-top: 1px solid var(--line); color: #78879b; font-size: 11px; text-align: center; }
+
+    @media (max-width: 760px) {
+      main { padding-top: 40px; }
+      .workspace { grid-template-columns: 1fr; }
+      .intro { margin-bottom: 25px; }
+    }
+    @media (max-width: 480px) {
+      .shell { width: min(100% - 28px, 1120px); }
+      header { min-height: 74px; }
+      .status { padding: 7px 9px; font-size: 10px; }
+      .brand-mark { width: 38px; height: 38px; }
+      .brand-name { font-size: 13px; }
+      .register { padding: 20px 17px; }
+      .flow { grid-template-columns: 1fr; gap: 5px; padding: 10px; }
+      .flow-step { padding: 8px 10px; }
+      .flow-arrow { line-height: 10px; transform: rotate(90deg); }
+      .input-row { flex-direction: column; }
+      .input-row .button { width: 100%; }
+      .log-entry { grid-template-columns: 42px 44px 1fr; gap: 7px; font-size: 11px; }
+      .log-time { font-size: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">I/O</div>
+        <div>
+          <p class="brand-name">Instruction Unit</p>
+          <p class="brand-subtitle">Input &amp; output simulator</p>
+        </div>
+      </div>
+      <div class="status"><span class="status-dot" aria-hidden="true"></span> System ready</div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Computer fundamentals · simulator</p>
+        <h1 id="page-title"><span>Input</span> in.<br><span>Output</span> out.</h1>
+        <p class="intro-copy">Try the basic input and output instructions. Store a number in the accumulator with <strong>IN</strong>, then display it with <strong>OUT</strong>.</p>
+      </section>
+
+      <div class="flow" aria-label="Instruction flow: input, store, output">
+        <div class="flow-step"><span class="flow-number">01</span><div><strong>INPUT</strong><small>Enter an integer</small></div></div>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <div class="flow-step"><span class="flow-number">02</span><div><strong>STORE</strong><small>Keep it in ACC</small></div></div>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <div class="flow-step"><span class="flow-number">03</span><div><strong>OUTPUT</strong><small>Run OUT to display</small></div></div>
+      </div>
+
+      <section class="workspace" aria-label="Instruction simulator">
+        <article class="card">
+          <div class="card-heading">
+            <h2>Accumulator</h2>
+            <span class="tiny-label">REGISTER · ACC</span>
+          </div>
+          <div class="register">
+            <div class="register-label">Current stored value</div>
+            <div class="register-value" aria-live="polite"><span class="value" id="accumulator">—</span></div>
+            <p class="register-help">The IN instruction stores your integer here.</p>
+
+            <div class="input-area">
+              <label for="number-input">Value to input</label>
+              <div class="input-row">
+                <input id="number-input" type="number" step="1" placeholder="Type an integer" inputmode="numeric">
+                <button class="button button-in" id="in-button" type="button"><span aria-hidden="true">↓</span> Run IN</button>
+              </div>
+              <p class="message" id="message" role="status"></p>
+              <div class="actions">
+                <button class="button button-out" id="out-button" type="button"><span aria-hidden="true">↑</span> Run OUT</button>
+                <button class="button button-reset" id="reset-button" type="button">Reset unit</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-heading">
+            <h2>Available instructions</h2>
+            <span class="tiny-label">2 COMMANDS</span>
+          </div>
+          <div class="instructions">
+            <div class="instruction">
+              <div class="opcode in">IN</div>
+              <div><h3>Input instruction</h3><p>Reads the integer you enter and stores it in the accumulator.</p></div>
+            </div>
+            <div class="instruction">
+              <div class="opcode">OUT</div>
+              <div><h3>Output instruction</h3><p>Displays the current accumulator value in the execution log.</p></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="card log-card" aria-labelledby="log-title">
+        <div class="card-heading">
+          <h2 id="log-title">Execution log</h2>
+          <span class="tiny-label" id="entry-count">0 ENTRIES</span>
+        </div>
+        <div class="log-list" id="log-list" aria-live="polite">
+          <div class="empty-log" id="empty-log">No instructions run yet. Start with IN to store a value.</div>
+        </div>
+      </section>
+    </main>
+
+    <footer>Input / Output Instruction Unit · Interactive learning demo</footer>
+  </div>
+
+  <script>
+    const accumulatorDisplay = document.getElementById("accumulator");
+    const numberInput = document.getElementById("number-input");
+    const message = document.getElementById("message");
+    const logList = document.getElementById("log-list");
+    const entryCount = document.getElementById("entry-count");
+    let accumulator = null;
+    let entries = 0;
+
+    function addLog(instruction, description) {
+      const emptyLog = document.getElementById("empty-log");
+      if (emptyLog) emptyLog.remove();
+
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+
+      const time = document.createElement("span");
+      time.className = "log-time";
+      time.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+
+      const code = document.createElement("span");
+      code.className = "log-code" + (instruction === "OUT" ? " out" : "");
+      code.textContent = instruction;
+
+      const detail = document.createElement("span");
+      detail.textContent = description;
+
+      entry.append(time, code, detail);
+      logList.prepend(entry);
+      entries += 1;
+      entryCount.textContent = `${entries} ${entries === 1 ? "ENTRY" : "ENTRIES"}`;
+    }
+
+    document.getElementById("in-button").addEventListener("click", () => {
+      const rawValue = numberInput.value.trim();
+      if (rawValue === "" || !Number.isSafeInteger(Number(rawValue))) {
+        message.textContent = "Enter a valid whole number before running IN.";
+        numberInput.focus();
+        return;
+      }
+
+      accumulator = Number(rawValue);
+      accumulatorDisplay.textContent = String(accumulator);
+      message.textContent = "";
+      addLog("IN", `Stored ${accumulator} in the accumulator.`);
+      numberInput.value = "";
+    });
+
+    document.getElementById("out-button").addEventListener("click", () => {
+      if (accumulator === null) {
+        message.textContent = "Run IN first to store a value in the accumulator.";
+        numberInput.focus();
+        return;
+      }
+
+      message.textContent = "";
+      addLog("OUT", `Output value: ${accumulator}`);
+    });
+
+    numberInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") document.getElementById("in-button").click();
+    });
+
+    document.getElementById("reset-button").addEventListener("click", () => {
+      accumulator = null;
+      entries = 0;
+      accumulatorDisplay.textContent = "—";
+      message.textContent = "";
+      entryCount.textContent = "0 ENTRIES";
+      logList.innerHTML = '<div class="empty-log" id="empty-log">No instructions run yet. Start with IN to store a value.</div>';
+      numberInput.value = "";
+    });
+  </script>
+</body>
+</html>
